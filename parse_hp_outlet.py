@@ -44,8 +44,6 @@ class HpOutletItem:
 
 class HpOutletExtractor:
 
-    col_headers = ['Model', 'Part#', 'Outlet std price', 'Outlet sale price', 'Promo bonus']
-
     def __init__(self):
         self.items = {}
 
@@ -81,37 +79,27 @@ class HpOutletExtractor:
                 print(item.csv_string())
             print
 
+    def get_item_column_contents(self, column_contents):
+        if len(column_contents) > 0:
+            contents = column_contents[0]
+        else:
+            contents = ''
+        return contents
+
     def parse_items_by_css(self, item_type_css_selector):
-        clearance_div = self.soup.select(item_type_css_selector)[0]
-        clearance_table = clearance_div.find('table',{'class':'pps-table'})
-        rows = clearance_table.findAll('tr',{'class':'data'})
+        section_div = self.soup.select(item_type_css_selector)[0]
+        item_table = section_div.find('table',{'class':'pps-table'})
+        rows = item_table.findAll('tr',{'class':'data'})
         items = []
-        std_price = None
-        sale_price = None
         for row in rows:
             item = HpOutletItem()
-            cols = row.findAll('td')
-            x = 0
-            for col in cols:
-                if len(col.contents) > 0:
-                    contents = col.contents[0]
-                else:
-                    contents = ''
-
-                header = self.col_headers[x]
-                if header == 'Model':
-                    item.model = contents
-                elif header == 'Part#':
-                    item.part_num = contents
-                elif header == 'Outlet std price':
-                    std_price = contents
-                elif header == 'Outlet sale price':
-                    sale_price = contents
-                elif header == 'Promo bonus':
-                    item.promo_bonus = contents
-                else:
-                    print('ERROR: skipping unknown column: ' + col)
-                x += 1
+            columns = row.findAll('td')
+            # column header = 'Model', 'Part#', 'Outlet std price', 'Outlet sale price', 'Promo bonus'
+            item.model       = self.get_item_column_contents(columns[0].contents)
+            item.part_num    = self.get_item_column_contents(columns[1].contents)
+            std_price        = self.get_item_column_contents(columns[2].contents)
+            sale_price       = self.get_item_column_contents(columns[3].contents)
+            item.promo_bonus = self.get_item_column_contents(columns[4].contents)
             item.setPrice(std_price, sale_price)
             items.append(item)
         return items
