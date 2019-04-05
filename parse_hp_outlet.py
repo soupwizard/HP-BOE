@@ -1,9 +1,10 @@
+#!/usr/bin/python3
 
-import requests
+import requests, argparse, sys
 from bs4 import BeautifulSoup
 from decimal import *
 
-class HpOutletItem:
+class HpBusinessOutletItem:
 
     def __init__(self):
         self.model              = None
@@ -31,8 +32,9 @@ class HpOutletItem:
     ### method for making this class sortable
 
     def _get_comparison_tuple(self):
-        model = self.model.upper()
+        # sort by price then model
         price = self.price
+        model = self.model.upper()
         return (price, model)
 
     def __lt__(self, other):
@@ -42,18 +44,28 @@ class HpOutletItem:
         #return self.model.upper() == other.model.upper()
         return ( self._get_comparison_tuple() == other._get_comparison_tuple() )
 
-class HpOutletExtractor:
+class HpBusinessOutletExtractor:
 
-    def __init__(self):
+    def __init__(self, url):
+        self.url = url
         self.items = {}
 
-    def load_page(self, url):
-        page = requests.get(url)
+        self.load_page()
+        self.parse_items()
+
+    def load_page(self):
+        try:
+            page = requests.get(self.url)
+        except requests.ConnectionError as ex:
+            print(ex)
+            print("ERROR: Connection Error when loading web page from %s" % (self.url))
+            sys.exit(1)
+
         if page.status_code == requests.codes.ok:
-            #print("%d, Retrieved web page from %s" % (page.status_code, url))
+            #print("%d, Retrieved web page from %s" % (page.status_code, self.url))
             self.soup = BeautifulSoup(page.text, 'html.parser')
         else:
-            print("%d, Failed to retrieve web page from %s" % (page.status_code, url))
+            print("%d, Failed to retrieve web page from %s" % (page.status_code, self.url))
             sys.exit(1)
 
     def parse_items(self):
@@ -68,7 +80,7 @@ class HpOutletExtractor:
         #self.items['Thin Clients']              = self.parse_items_by_css('#thin_clients')
         #self.items['Monitors']                  = self.parse_items_by_css('#monitors')
 
-    def print_items(self):
+    def print_items_csv(self):
         headers = 'Model,Part#,Price,Promo bonus'
         item_types = sorted(self.items.keys())
         for item_type in item_types:
@@ -92,7 +104,7 @@ class HpOutletExtractor:
         rows = item_table.findAll('tr',{'class':'data'})
         items = []
         for row in rows:
-            item = HpOutletItem()
+            item = HpBusinessOutletItem()
             columns = row.findAll('td')
             # column header = 'Model', 'Part#', 'Outlet std price', 'Outlet sale price', 'Promo bonus'
             item.model       = self.get_item_column_contents(columns[0].contents)
@@ -104,11 +116,27 @@ class HpOutletExtractor:
             items.append(item)
         return items
 
-HP_OUTLET_URL= 'https://h41369.www4.hp.com/pps-offers.php'
+################################################
+### Main
+################################################
 
-hoe = HpOutletExtractor()
-hoe.load_page(HP_OUTLET_URL)
-hoe.parse_items()
-hoe.print_items()
+def main(**kwargs):
+    url         = kwargs['url']
+    output_file = kwargs['output_file']
 
+    hboe = HpBusinessOutletExtractor(url)
+    hboe.print_items_csv()
+
+################################################
+
+if __name__ == '__main__':
+
+    HP_BUSINESS_OUTLET_URL = 'https://h41369.www4.hp.com/pps-offers.php'
+
+    parser = argparse.ArgumentParser(description='Parse items for sale at HP Business Outlet web page')
+    parser.add_argument('-u', '--url', type=str, default=HP_BUSINESS_OUTLET_URL, help='Output csv file to store processed results')
+    parser.add_argument('-o', '--output_file', type=str, default='', help='Output csv file to store processed results')
+    args = parser.parse_args()
+
+    main(**vars(args))
 

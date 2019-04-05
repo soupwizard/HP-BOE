@@ -2,13 +2,16 @@ To Do
 
 Config:
 - Command line arguments (url, which item types to parse)
-- Config file
+- Config file?
 
 Item Data:
 - Parse item description (model column) for sub-items (model, OS, cpu, memory, hd, etc)
+- Better error handling when page data doesn't match what we expect (when using bs4)
 
 Output:
 - Export directly to .csv file
 - Export directly to .xlsx file, with sheets for each item type
 - Store in DB for a web front end to use?
 
+Portability:
+- Ensure works with windows, mac, linux
