@@ -20,6 +20,7 @@ class HpBusinessOutletItem:
         self.cpu_speed      = None
         self.storage        = None
         self.memory         = None
+        self.screen         = None
         self.misc           = None
 
         self.soup = None # beautiful soup's html parser
@@ -106,7 +107,7 @@ class HpBusinessOutletItem:
                 storage_size = parts[storage_index]
             else:
                 # this part is not a storage size, must be memory size instead
-                # leave storage_index where is it so that we can check if that part is a memory size
+                # leave storage_index where is it so that we can check if the part is a memory size
                 keep_going = False
                 continue
 
@@ -121,8 +122,9 @@ class HpBusinessOutletItem:
 
             if storage_desc == '':
                 # whoops didn't find any desciptors for storage size, that must be memory size instead
-                # leave storage_index where is it so that we can check if that part is a memory size
+                # leave storage_index where is it so that we can check if the part is a memory size
                 keep_going = False
+                continue
             else:
                 # ok found storage size and descriptors
                 storage_device = storage_size + storage_desc
@@ -170,11 +172,11 @@ class HpBusinessOutletItem:
                 # this part starts with a keyword from screen_sizes
                 self.screen += ' ' + part
             else:
+                # otherwise store into misc info
                 self.misc += ' ' + part
                 
         self.screen = self.screen.strip()
         self.misc = self.misc.strip()
-
 
     ### Methods for outputting data
 
@@ -274,11 +276,11 @@ class HpBusinessOutletExtractor:
             item = HpBusinessOutletItem()
             columns = row.findAll('td')
             # column header = 'Model', 'Part#', 'Outlet std price', 'Outlet sale price', 'Promo bonus'
-            item.description = self.get_item_column_contents(columns[0].contents)
-            item.part_num    = self.get_item_column_contents(columns[1].contents)
-            std_price        = self.get_item_column_contents(columns[2].contents)
-            sale_price       = self.get_item_column_contents(columns[3].contents)
-            item.promo_bonus = self.get_item_column_contents(columns[4].contents)
+            item.description = self.get_item_column_contents(columns[0].contents).strip()
+            item.part_num    = self.get_item_column_contents(columns[1].contents).strip()
+            std_price        = self.get_item_column_contents(columns[2].contents).strip()
+            sale_price       = self.get_item_column_contents(columns[3].contents).strip()
+            item.promo_bonus = self.get_item_column_contents(columns[4].contents).strip()
             item.setPrice(std_price, sale_price)
             item.parseModel()
             items.append(item)
