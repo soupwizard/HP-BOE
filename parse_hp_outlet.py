@@ -22,6 +22,8 @@ class HpBusinessOutletItem:
         self.memory         = None
         self.screen         = None
         self.misc           = None
+        self.wlan           = None
+        self.webcam         = None
 
         self.soup = None # beautiful soup's html parser
 
@@ -77,7 +79,13 @@ class HpBusinessOutletItem:
             sys.exit(1)
         else:
             self.cpu_name  = ' '.join(parts[cpu_index_start : cpu_index_end])
-            self.cpu_speed = parts[cpu_index_end] 
+            if self.cpu_name.startswith('C '):
+                self.cpu_name = self.cpu_name.replace('C ', 'Celeron ')
+
+            self.cpu_speed = parts[cpu_index_end]
+            self.cpu_speed = self.cpu_speed.replace('GHz', '')
+            speed = float(self.cpu_speed)
+            self.cpu_speed = "%.1f GHz" % (speed)
 
         next_index = cpu_index_end + 1
 
@@ -131,7 +139,7 @@ class HpBusinessOutletItem:
                 storage_devices.append(storage_device)
                 storage_index = x
 
-        self.storage = ' '.join(storage_devices)
+        self.storage = ', '.join(storage_devices)
         if self.storage == '':
             print("ERROR: storage info not found:", self.description)
             sys.exit(1)
@@ -158,8 +166,11 @@ class HpBusinessOutletItem:
         #
         ### Find Misc (and particular stuff from misc)
         #
+        # FPR is Finger Print Reader
         self.misc = ''
         self.screen = ''
+        wlan = None
+        webcam = None
 
         screen_resolutions = ['HD', 'FHD', 'QHD', 'UHD', 'WXGA', '3K2K']
         screen_sizes = ['11', '12', '13', '14', '15', '17']
@@ -171,6 +182,15 @@ class HpBusinessOutletItem:
             elif any(part.startswith(s) for s in screen_sizes):
                 # this part starts with a keyword from screen_sizes
                 self.screen += ' ' + part
+            elif part.upper() == 'WLAN':
+                wlan = True
+            elif part.upper() == 'NO-WIRELESS':
+                wlan = False
+            elif part.upper() == 'CAM':
+                webcam = True
+            elif part.upper() == 'NO-CAM':
+                webam = False
+
             else:
                 # otherwise store into misc info
                 self.misc += ' ' + part
@@ -178,13 +198,30 @@ class HpBusinessOutletItem:
         self.screen = self.screen.strip()
         self.misc = self.misc.strip()
 
+        if wlan == True:
+            self.wlan = 'WLAN'
+        elif wlan == False:
+            self.wlan = 'No WLAN'
+        elif wlan == None:
+            self.wlan = '?'
+
+        if webcam == True:
+            self.webcam = 'Webcam'
+        elif webcam == False:
+            self.webcam = 'No Webcam'
+        elif webcam == None:
+            self.webcam = '?'
+
+
     ### Methods for outputting data
 
     def get_csv_headers(self):
-        return ['Model','CPU Name','CPU Speed','OS','Storage','Memory','Screen','Misc','Part#','Price','Promo bonus']
+        return ['Model','CPU Name','CPU Speed','OS','Storage','Memory','Screen','WLAN','Webcam','Misc','Part#','Price','Promo bonus']
 
     def _get_output_attributes(self):
-        return [self.model, self.cpu_name, self.cpu_speed, self.os, self.storage, self.memory, self.screen, self.misc, self.part_num, '$'+str(self.price), '"'+self.promo_bonus+'"']
+        attribs = [self.model, self.cpu_name, self.cpu_speed, self.os, '"'+self.storage+'"', self.memory, self.screen, self.wlan, 
+                   self.webcam, self.misc, self.part_num, '$'+str(self.price), '"'+self.promo_bonus+'"'] 
+        return attribs
 
     def csv_string(self):
         string = ','.join(self._get_output_attributes())
