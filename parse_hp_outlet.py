@@ -98,7 +98,8 @@ class HpBusinessOutletItem:
         #
         # one or more storage devices
         #   each storage devices is in format of 'size type(s)'
-        # 
+        # Exampe:
+        #   HP EliteBook 850 G4 Touch W10P-64 i5 7300U 2.6GHz 256GB SSD 8GB 15.6FHD WLAN BT BL FPR NFC Cam Rfrbd
         # Example with 2 storage devices:
         #   HP ProBook 640 G4 W10P-64 i5 8250U 1.6GHz 256GB NVME 1TB SATA 16GB(1x16GB) 14.0FHD WLAN BT No-FPR No
         
@@ -124,16 +125,23 @@ class HpBusinessOutletItem:
             for x in range(storage_index+1, len(parts)):
                 if parts[x].upper() in ['NVME', 'SATA', 'SSD']:
                     storage_desc += ' ' + parts[x]
+                elif parts[x].upper().endswith('GB'):
+                    # odd case like "HP EliteBook 840 G3 W10P-64 i5 6300U 2.4GHz 500GB 8GB 14.0HD"
+                    # missing storage type
+                    # x now points to the memory size, so we're done looking at storage
+                    keep_going = False
+                    break
                 else:
                     # done with storage descriptors for this device
                     break
 
-            if storage_desc == '':
-                # whoops didn't find any desciptors for storage size, that must be memory size instead
-                # leave storage_index where is it so that we can check if the part is a memory size
-                keep_going = False
-                continue
-            else:
+            #if storage_desc == '':
+            #    # whoops didn't find any desciptors for storage size, that must be memory size instead
+            #    # leave storage_index where is it so that we can check if the part is a memory size
+            #    keep_going = False
+            #    continue
+            #else:
+            if 1==1:
                 # ok found storage size and descriptors
                 storage_device = storage_size + storage_desc
                 storage_devices.append(storage_device)
