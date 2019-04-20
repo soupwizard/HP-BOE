@@ -123,7 +123,8 @@ class HpBusinessOutletItem:
             # all storage devices have one or more descriptors
             storage_desc = ''
             for x in range(storage_index+1, len(parts)):
-                if parts[x].upper() in ['NVME', 'SATA', 'SSD']:
+                if parts[x].upper() in ['NVME', 'SATA', 'SSD', 'SED']:
+                    # SED is a self-encrypting drive
                     storage_desc += ' ' + parts[x]
                 elif parts[x].upper().endswith('GB'):
                     # odd case like "HP EliteBook 840 G3 W10P-64 i5 6300U 2.4GHz 500GB 8GB 14.0HD"

@@ -15,3 +15,7 @@ Output:
 
 Portability:
 - Ensure works with windows, mac, linux
+
+Resilience:
+- If error parsing, warn on that row but keep processing
+- In general, warn if you can keep valid data and continue
