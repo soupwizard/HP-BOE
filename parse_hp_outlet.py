@@ -49,7 +49,7 @@ class HpBusinessOutletItem:
         #
         self.os = None
         for os_index in range(0, len(parts)):
-            if parts[os_index].startswith('W10'):
+            if parts[os_index].startswith('W10') or parts[os_index].startswith('W7'):
                 self.os = parts[os_index]
                 break
 
