@@ -40,6 +40,8 @@ class HpBusinessOutletItem:
         # HP Elite x2 1013 G3 W10P-64 i5 8250U 1.6GHz 256GB NVME 16GB 13.0 3K2K WWAN(VZW) WLAN BT No-GPS BL FP
         # HP ProBook 640 G4 W10P-64 i3 8130U 2.2GHz 500GB SATA 8GB(1x8GB) 14.0HD No-Wireless No-NFC No-FPR No-
         # HP ProBook 640 G4 W10P-64 i5 8250U 1.6GHz 256GB NVME 1TB SATA 16GB(1x16GB) 14.0FHD WLAN BT No-FPR No
+        # HP EliteBook 850 G5 W10P-64 i5 7300U 2.6GHz 256GB NMVE 8GB(1x8GB) DDR4 2400 15.6FHD No-FPR No-NFC Ca
+
 
         #print('%%% ' + self.description)
         parts = self.description.split(' ')
@@ -123,9 +125,12 @@ class HpBusinessOutletItem:
             # all storage devices have one or more descriptors
             storage_desc = ''
             for x in range(storage_index+1, len(parts)):
-                if parts[x].upper() in ['NVME', 'SATA', 'SSD', 'SED']:
+                if parts[x].upper() in ['NVME', 'NMVE', 'SATA', 'SSD', 'SED']:
                     # SED is a self-encrypting drive
-                    storage_desc += ' ' + parts[x]
+                    desc = parts[x].upper()
+                    if desc == 'NMVE':
+                        desc = 'NVME'
+                    storage_desc += ' ' + desc
                 elif parts[x].upper().endswith('GB'):
                     # odd case like "HP EliteBook 840 G3 W10P-64 i5 6300U 2.4GHz 500GB 8GB 14.0HD"
                     # missing storage type
